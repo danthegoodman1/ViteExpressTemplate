@@ -1,0 +1,6 @@
+{
+  "db": {
+    "connectionString": "{{PG_DSN}}"
+  },
+  "outDir": "src/zapatos"
+}

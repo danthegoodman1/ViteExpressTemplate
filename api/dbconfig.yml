@@ -1,0 +1,11 @@
+development:
+  dialect: postgres
+  datasource: postgresql://postgres:mysecretpassword@localhost:5432/postgres?sslmode=disable
+  dir: migrations
+  table: migrations
+
+neon_production:
+  dialect: postgres
+  datasource: ${PROD_PG_DSN}
+  dir: migrations
+  table: migrations
