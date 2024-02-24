@@ -4,7 +4,6 @@ dotenv.config();
 import express from 'express';
 import { v4 as uuidv4 } from 'uuid';
 import { WebSocket, WebSocketServer } from 'ws';
-import { connect, Subscription } from 'nats';
 
 import { logger } from './logger/index.js';
 import { extractError } from './utils.js';
@@ -83,43 +82,7 @@ async function main() {
 		ws.isAlive = true;
 		sockets[ws.id] = ws; // store it in the index
 		ws.on('message', (message) => {
-			console.log(`Received message: ${message} from ws ${ws.id}`);
-			const msgJson = JSON.parse(message.toString());
-			if (!msgJson.MessageType.startsWith('Subscribe') && !msgJson.MessageType.startsWith('Unsubscribe')) {
-				/**
-				 * If you care about presence, emit RoommateSubscribed and RoommateUnsubscribed,
-				 * but we won't send these messages to clients since they don't do anything about it
-				 * (and initial state might be a secret).
-				 */
-
-				// Send to all other roommates
-				for (const socketID of rooms[msgJson.RoomID]) {
-					if (socketID !== ws.id) {
-						// No reason to send back to emitting client, it will ignore it anyway
-						sockets[socketID].send(message.toString());
-					}
-				}
-			}
-
-			if (msgJson.MessageType.startsWith('Subscribe')) {
-				console.log(ws.id, 'subscribed to', msgJson.RoomID);
-				// Subscribe to room
-				if (!rooms[msgJson.RoomID]) {
-					rooms[msgJson.RoomID] = [];
-				}
-
-				rooms[msgJson.RoomID].push(ws.id);
-			}
-
-			if (msgJson.MessageType.startsWith('Unsubscribe')) {
-				console.log(ws.id, 'unsubscribed from', msgJson.RoomID);
-				// Remove from room
-				if (!rooms[msgJson.RoomID]) {
-					rooms[msgJson.RoomID] = [];
-				}
-
-				rooms[msgJson.RoomID] = rooms[msgJson.RoomID].filter((socketID) => socketID !== ws.id);
-			}
+			console.log(`Received message from ws ${ws.id}`);
 		});
 
 		// https://github.com/websockets/ws#how-to-detect-and-close-broken-connections
